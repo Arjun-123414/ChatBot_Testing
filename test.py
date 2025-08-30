@@ -2549,7 +2549,7 @@ def main_app():
                                 temp_instructions.append(f"{key}: {description}")
                         st.session_state.temp_clarifications = temp_instructions
 
-                        prompt = corrected_prompt
+                    prompt = corrected_prompt
 
             else:
                 # User typed something else, treat as new question
