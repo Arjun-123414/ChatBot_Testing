@@ -2455,6 +2455,18 @@ def main_app():
                 st.session_state.awaiting_correction_choice = False
                 del st.session_state.correction_data
                 st.info(f"✅ Applied all first suggestions")
+
+                # Preserve clarifications if they exist
+                if hasattr(st.session_state, 'pending_clarifications') and st.session_state.pending_clarifications:
+                    temp_instructions = []
+                    for key, description in st.session_state.pending_clarifications.items():
+                        if ":" in key:
+                            _, value = key.split(":", 1)
+                            temp_instructions.append(f"{value}: {description}")
+                        else:
+                            temp_instructions.append(f"{key}: {description}")
+                    st.session_state.temp_clarifications = temp_instructions
+
                 prompt = corrected_prompt
 
             # Handle multiple number selections (e.g., "1.1, 2.1")
@@ -2475,6 +2487,18 @@ def main_app():
                 st.session_state.awaiting_correction_choice = False
                 del st.session_state.correction_data
                 st.info(f"✅ Applied {len(selections)} corrections")
+
+                # Preserve clarifications if they exist
+                if hasattr(st.session_state, 'pending_clarifications') and st.session_state.pending_clarifications:
+                    temp_instructions = []
+                    for key, description in st.session_state.pending_clarifications.items():
+                        if ":" in key:
+                            _, value = key.split(":", 1)
+                            temp_instructions.append(f"{value}: {description}")
+                        else:
+                            temp_instructions.append(f"{key}: {description}")
+                    st.session_state.temp_clarifications = temp_instructions
+
                 prompt = corrected_prompt
 
             # Handle single number selection
@@ -2514,7 +2538,17 @@ def main_app():
 
                         st.session_state.pending_clarifications = updated_clarifications
 
-                    prompt = corrected_prompt
+                        # CRITICAL: Re-create temp_clarifications with updated values
+                        temp_instructions = []
+                        for key, description in updated_clarifications.items():
+                            if ":" in key:
+                                _, value = key.split(":", 1)
+                                temp_instructions.append(f"{value}: {description}")
+                            else:
+                                temp_instructions.append(f"{key}: {description}")
+                        st.session_state.temp_clarifications = temp_instructions
+
+                        prompt = corrected_prompt
 
             else:
                 # User typed something else, treat as new question
