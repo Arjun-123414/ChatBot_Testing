@@ -2382,7 +2382,8 @@ def main_app():
                         # Reload instructions
                         all_instructions = load_all_instructions(engine)
                         st.session_state.knowledge_base_instructions = all_instructions
-
+            if hasattr(st.session_state, 'temp_clarifications'):
+                del st.session_state.temp_clarifications
             save_after_exchange()
 
 
@@ -2730,9 +2731,29 @@ def main_app():
                     unsafe_allow_html=True
                 )
 
-            response_text, token_usage_first_call = get_groq_response_with_system(
-                st.session_state.messages
-            )
+            # Check if we have temporary clarifications that need to be included
+            if hasattr(st.session_state, 'temp_clarifications') and st.session_state.temp_clarifications:
+                # Get current system prompt
+                current_system_prompt = st.session_state.system_prompt
+
+                # Add clarifications
+                clarification_text = "\n\nTEMPORARY CLARIFICATIONS FOR THIS QUERY:\n"
+                for clarification in st.session_state.temp_clarifications:
+                    clarification_text += f"- {clarification}\n"
+
+                # Temporarily update system prompt
+                enhanced_prompt = current_system_prompt + clarification_text
+
+                # Create messages with enhanced system prompt
+                enhanced_messages = [{"role": "system", "content": enhanced_prompt}] + st.session_state.messages[1:]
+
+                response_text, token_usage_first_call = get_groq_response(enhanced_messages)
+
+                # Don't delete temp_clarifications here - keep them for potential spelling correction
+            else:
+                response_text, token_usage_first_call = get_groq_response_with_system(
+                    st.session_state.messages
+                )
             st.session_state.total_tokens += token_usage_first_call
 
             # Check if it's an error response
@@ -3125,6 +3146,8 @@ def main_app():
             st.session_state.messages.append({"role": "assistant", "content": natural_response})
             st.session_state.chat_history.append({"role": "assistant", "content": natural_response})
 
+            if hasattr(st.session_state, 'temp_clarifications'):
+                del st.session_state.temp_clarifications
             save_after_exchange()
 
             # Clear the final transition message right before showing the answer
