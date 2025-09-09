@@ -1610,7 +1610,7 @@ def main_app():
             key=f"download_csv_{message_index}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
         )
 
-        if num_rows <= 200000:
+        if num_rows <= 10000:
             # For tables under the threshold, show interactive AgGrid
             gb = GridOptionsBuilder.from_dataframe(df)
             gb.configure_default_column(filter=True, sortable=True)
@@ -2290,7 +2290,7 @@ def main_app():
                         [m for m in st.session_state.chat_history if m["role"] == "assistant"]
                     )
                     st.session_state.chat_message_tables[current_message_idx] = df_idx
-                    if num_rows > 200000:
+                    if num_rows > 10000:
                         natural_response = f"Query returned {num_rows:,} rows. Due to the large size of the result, only a download option is provided below. You can download the full dataset as a CSV file for viewing in your preferred spreadsheet application."
                     else:
                         natural_response = f"Query returned {num_rows:,} rows. The result is displayed below:"
@@ -3050,7 +3050,7 @@ def main_app():
                     st.session_state.chat_message_tables[current_message_idx] = df_idx
 
                     # Customize message based on row count
-                    if num_rows > 200000:
+                    if num_rows > 10000:
                         natural_response = f"Query returned {num_rows:,} rows. Due to the large size of the result, only a download option is provided below. You can download the full dataset as a CSV file for viewing in your preferred spreadsheet application."
                     else:
                         natural_response = f"Query returned {num_rows:,} rows. The result is displayed below:"
