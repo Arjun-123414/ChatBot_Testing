@@ -2786,6 +2786,20 @@ def main_app():
 
             # Execute the query directly
             result = query_snowflake(sql_query, st.session_state["user"])
+            if isinstance(result, dict) and "error" in result and "Access Denied" in result["error"]:
+                # This is an access control error - DO NOT trigger clarification
+                natural_response = result["error"]
+
+                # Skip all error recovery mechanisms
+                st.session_state.messages.append({"role": "assistant", "content": natural_response})
+                st.session_state.chat_history.append({"role": "assistant", "content": natural_response})
+
+                # Show the error in chat
+                with st.chat_message("assistant"):
+                    st.error(natural_response)
+
+                save_after_exchange()
+                st.rerun()
 
             def get_snowflake_connectionz():
                 return create_engine(URL(
