@@ -159,8 +159,8 @@ def query_snowflake(query: str, user_email: str, params: Tuple = ()) -> Union[Li
         for table in tables_in_query:
             if table.upper() not in [t.upper() for t in allowed_tables]:
                 # Get the specific role needed for this table
-                role_query = """SELECT "dept" FROM "ROLE" WHERE "table_access" LIKE %s"""
-                role_result = _query_snowflake(role_query, params=(f"%{table}%",))
+                role_query = """SELECT "dept" FROM "ROLE" WHERE UPPER("table_access") = UPPER(%s)"""
+                role_result = _query_snowflake(role_query, params=(table,))
 
                 if role_result and "error" not in role_result[0] and role_result[0].get("dept"):
                     required_role = role_result[0]["dept"]
@@ -314,6 +314,7 @@ def get_table_sample_questions(table_name: str, user_email: str) -> List[str]:
     if table_name.upper() in table_questions:
         return table_questions[table_name.upper()]
     # return default_questions
+
 
 
 
