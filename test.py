@@ -1368,6 +1368,18 @@ def main_app():
         finally:
             db_session.close()
 
+    def delete_all_chats_for_user(user_email):
+        db_session = SessionLocal()
+        try:
+            db_session.query(ChatHistory).filter(ChatHistory.user == user_email).delete()
+            db_session.commit()
+            return True
+        except Exception as e:
+            st.error(f"Error deleting all chats: {e}")
+            return False
+        finally:
+            db_session.close()
+
     with st.sidebar:
         logo = Image.open("4Logo.png")  # Your logo file
         st.image(logo, width=400)
@@ -1438,10 +1450,26 @@ def main_app():
             st.rerun()
 
         # Clear History button
-        if st.button("🗑️ Clear History") and st.session_state.current_chat_id:
-            delete_chat_by_id(st.session_state.current_chat_id)
-            st.success("Chat history cleared!")
-            st.rerun()
+        if st.button("🗑️ Clear All History"):
+            if delete_all_chats_for_user(st.session_state["user"]):
+                # Clear session state as well
+                if "messages" in st.session_state:
+                    del st.session_state.messages
+                if "chat_history" in st.session_state:
+                    del st.session_state.chat_history
+                if "current_chat_id" in st.session_state:
+                    del st.session_state.current_chat_id
+                if "persistent_dfs" in st.session_state:
+                    del st.session_state.persistent_dfs
+                if "chat_message_tables" in st.session_state:
+                    del st.session_state.chat_message_tables
+                if "last_saved_message_count" in st.session_state:
+                    del st.session_state.last_saved_message_count
+
+                st.success("All chat history cleared!")
+                st.rerun()
+            else:
+                st.error("Failed to clear chat history.")
         # Add this in sidebar after the Learning Stats button
         if "knowledge_base_instructions" in st.session_state and st.session_state.knowledge_base_instructions:
             with st.expander("📚 Knowledge Base"):
