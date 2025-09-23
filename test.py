@@ -1325,6 +1325,8 @@ def main_app():
         st.session_state.awaiting_simple_clarification = False
     if "spelling_just_corrected" not in st.session_state:
         st.session_state.spelling_just_corrected = False
+    if "current_chat_id" not in st.session_state:
+        st.session_state.current_chat_id = None
     if "awaiting_correction_choice" not in st.session_state:
         st.session_state.awaiting_correction_choice = False
     if "correction_data" not in st.session_state:
@@ -1436,7 +1438,7 @@ def main_app():
             st.rerun()
 
         # Clear History button
-        if st.button("🗑️ Clear History"):
+        if st.button("🗑️ Clear History") and st.session_state.current_chat_id:
             delete_chat_by_id(st.session_state.current_chat_id)
             st.success("Chat history cleared!")
             st.rerun()
